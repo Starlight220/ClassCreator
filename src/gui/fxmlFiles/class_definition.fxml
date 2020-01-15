@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import java.lang.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<?import javafx.collections.FXCollections?>
+<Tab style="-fx-background-color: rgb(0,0,235)" text="Class Definition" xmlns:fx="http://javafx.com/fxml/1"
+     fx:controller="gui.Controller">
+    <VBox>
+        <!--        file type-->
+        <HBox>
+            <Label text="File Type"/>
+            <ChoiceBox onAction="#handleClassType" >
+                <String fx:value="class"/>
+                <String fx:value="interface"/>
+                <String fx:value="enum"/>
+                <String fx:value="annotation"/>
+            </ChoiceBox>
+        </HBox>
+        <!--        name-->
+        <HBox>
+            <Label text="Class Name"/>
+            <TextField fx:id = "classNameField" onAction="#initClassNameField"/>
+        </HBox>
+<!--        publicity-->
+        <HBox alignment="CENTER_LEFT" spacing="50.0" style="-fx-background-color: rgb(113,255,253)">
+            <Label alignment="CENTER" text="Choose a publicity"/>
+            <ChoiceBox fx:id="cd_publicityChooser" onAction="#handleClassPublicity">
+                <String fx:value="public"/>
+                <String fx:value="package"/>
+                <String fx:value="private"/>
+            </ChoiceBox>
+        </HBox>
+
+<!--        abstact-->
+        <HBox alignment="CENTER_LEFT" spacing="50.0" style="-fx-background-color: rgb(255,242,137)">
+            <fx:define>
+                <ToggleGroup fx:id="cd_abstractGroup"/>
+            </fx:define>
+            <RadioButton text="abstract" toggleGroup="$cd_abstractGroup" onAction="#handleClassAbstracticity"/>
+            <RadioButton text="final" toggleGroup="$cd_abstractGroup"/>
+            <RadioButton text="neither" toggleGroup="$cd_abstractGroup"/>
+        </HBox>
+    </VBox>
+</Tab>

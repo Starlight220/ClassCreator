@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import java.lang.String?>
+
+<TitledPane style="-fx-background-color: rgb(255,228,122)" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="gui.Controller" >
+    <VBox>
+<!--        name-->
+        <HBox>
+            <Label text="Method Name"/>
+            <TextField onAction="#handleMethodName"/>
+        </HBox>
+<!--        return type-->
+        <HBox>
+            <Label text="Method Return Type"/>
+            <TextField onAction="#handleMethodReturnType"/>
+        </HBox>
+<!--    publicity   -->
+        <HBox alignment="CENTER_LEFT" spacing="50.0" style="-fx-background-color: rgb(113,255,253)">
+            <Label alignment="CENTER" nodeOrientation="LEFT_TO_RIGHT" text="Choose a publicity" />
+            <ChoiceBox fx:id="md_publicityChooser" id="1" onAction="#handleMethodPublicity" >
+                <String fx:value="public" />
+                <String fx:value="protected"/>
+                <String fx:value="package"/>
+                <String fx:value="private"/>
+            </ChoiceBox>
+        </HBox>
+
+<!--        modifiers-->
+        <HBox spacing="50.0" style="-fx-background-color: rgb(255,242,137)">
+            <fx:define>
+                <ToggleGroup fx:id="md_abstractGroup"/>
+            </fx:define>
+            <Label alignment="CENTER" nodeOrientation="LEFT_TO_RIGHT" text="Choose modifiers" />
+            <RadioButton text="abstract" toggleGroup="$md_abstractGroup"/>
+            <RadioButton text="final" toggleGroup="$md_abstractGroup" />
+            <RadioButton text="neither" toggleGroup="$md_abstractGroup" />
+            <CheckBox text="static" />
+        </HBox>
+
+    </VBox>
+</TitledPane>

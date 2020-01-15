@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Accordion?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.layout.VBox?>
+
+<Tab style="-fx-background-color: rgb(0,255,0)" text="Method Definition" xmlns:fx="http://javafx.com/fxml/1"
+     fx:controller="gui.Controller">
+    <VBox>
+        <Accordion fx:id="methodAccordion">
+<!--            <panes>-->
+<!--                <fx:include source="methodPane.fxml"/>-->
+<!--            </panes>-->
+        </Accordion>
+        <Button onAction="#addAnotherMethod" text="Add another method" />
+    </VBox>
+</Tab>
+
