@@ -20,7 +20,7 @@
         <!--        name-->
         <HBox>
             <Label text="Class Name"/>
-            <TextField fx:id = "classNameField" onAction="#initClassNameField"/>
+            <TextField fx:id = "classNameField" onKeyTyped="#initClassNameField"/>
         </HBox>
 <!--        publicity-->
         <HBox alignment="CENTER_LEFT" spacing="50.0" style="-fx-background-color: rgb(113,255,253)">
@@ -37,9 +37,9 @@
             <fx:define>
                 <ToggleGroup fx:id="cd_abstractGroup"/>
             </fx:define>
-            <RadioButton text="abstract" toggleGroup="$cd_abstractGroup" onAction="#handleClassAbstracticity"/>
-            <RadioButton text="final" toggleGroup="$cd_abstractGroup"/>
-            <RadioButton text="neither" toggleGroup="$cd_abstractGroup"/>
+            <RadioButton text="abstract" toggleGroup="$cd_abstractGroup" onAction="#handleClassAbstraction"/>
+            <RadioButton text="final" toggleGroup="$cd_abstractGroup" onAction="#handleClassAbstraction"/>
+            <RadioButton text="neither" toggleGroup="$cd_abstractGroup" onAction="#handleClassAbstraction"/>
         </HBox>
     </VBox>
 </Tab>

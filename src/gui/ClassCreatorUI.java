@@ -26,36 +26,36 @@ public final class ClassCreatorUI extends Application {
     @Override
     public void start(Stage stage) throws IOException {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("fxmlFiles/CCUI.fxml"));
-        var root = (Scene) loader.load();
+        Scene root = loader.load();
         controller = loader.getController();
         String title = "Class Creator";
-
-        stage.setScene(root/* instanceof Scene ? (Scene) root : new Scene((Parent) root)*/);
+        stage.setScene(root);
         stage.setTitle(title);
+//        controller.initClassNameField();
         stage.show();
-        controller.initClassNameField();
     }
     private static Controller controller;
 
     static void build(ActionEvent ae) {
         Map<String, String> map = Controller.map;
         int methods = controller.methods, fields = controller.fields;
-        System.err.println("ClassCreatorUI::build ->");
-        System.err.println(map.get(className));
+//        System.err.println("ClassCreatorUI::build ->");
+//        System.err.println(map.get(className));
         ClassCreator classCreator = new ClassCreator(map.get(className), map.get(fileType),
                 parse(map.get(classAccess)),
-                map.get(classModifiers));
-//        for (int i = 0; i < methods; i++) {
-        int i = 0;
+                map.get(classModifiers));//TODO : modifier didnt propagate
+        for (int i = 0; i < 5; i++) {
+//        int i = 0;//TODO: tune for loop
             classCreator.addMethod(map.get(format(methodName, i+1)),
                     map.get(format(methodReturn, i+1)),
-                    parse(map.get(format(methodReturn, i+1))));
-//        }
-//        for (int i = 1; i <= fields; i++) {
-//            classCreator.addField(map.get(format(fieldName, i)),
-//                    map.get(format(fieldType, i)),
-//                    parse(map.get(format(fieldType, i))));
-//        }
+                    parse(map.get(format(methodAccess, i+1))),
+                    map.get(format(methodModifiers,i+1)));
+        }
+        for (int i = 1; i <= 5; i++) {//TODO : tune for loop
+            classCreator.addField(map.get(format(fieldName, i)),
+                    map.get(format(fieldType, i)),
+                    parse(map.get(format(fieldType, i))));//TODO : propagate field modifiers
+        }//TODO : fulfill get/set generation
         classCreator.toFile("");
     }
 }

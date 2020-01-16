@@ -1,47 +1,23 @@
 package logic;
 
-import logic.FileCreator;
+import java.util.*;
+import java.util.stream.Collectors;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
+import static java.lang.String.format;
+import static java.lang.String.join;
 import static java.nio.file.StandardOpenOption.CREATE;
 import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
 
-@SuppressWarnings({"unused", "LawOfDemeter"})
+@SuppressWarnings("LawOfDemeter")
 public final class ClassCreator {
-    private Class klass = null;
-//    @Deprecated
-//    private int methodi = 0, fieldi = 0;
+    private Class klass;
 
-    public ClassCreator(String name, String filetype, AccessModifier accessModifier, String... modifiers) {
+    public ClassCreator(String name, String filetype, AccessModifier accessModifier, String modifiers) {
         System.err.println("ClassCreator::ClassCreator ->");
         System.err.println("classname = " + name);
 
         klass = new Class(name, filetype, accessModifier);
-    }
-
-
-    public static String handleArrayElements(List<?> list, String delimiter, String optional, int minimumForOptional){
-        StringBuilder sb = new StringBuilder(10);
-        if (!list.isEmpty()) {
-            for (int i = 0; i < list.size(); i++) {
-                if (i == minimumForOptional) {
-                    sb.append(optional).append(" ");
-                }
-                sb.append(list.get(i));
-                if (i + 1 < list.size()) {
-                    sb.append(delimiter).append(" ");
-                }
-            }
-            return sb.toString();
-        }
-        return "";
-    }
-
-    public static <T> String handleArrayElements(List<T> arr, String delimiter) {
-        return handleArrayElements(arr, delimiter, "", 0);
+        klass.modifiers = modifiers;
     }
 
     public final void setSuperClass(String superClass) {
@@ -66,18 +42,19 @@ public final class ClassCreator {
             temp.modifiers.addAll(Arrays.asList(modifiers));
         }
         klass.fields.add(temp);
-//        fieldi++;
     }
 
     public void addProperty(String name, String type, AccessModifier accessModifier, String[] modifiers,
-                            boolean getter, boolean setter){
+                            boolean hasGetter, boolean hasSetter){
         addField(name,type,accessModifier,modifiers);
-        if(getter)
-            addMethod("get"+name,type,AccessModifier.PUBLIC);
-        if(setter)
-            addMethod("set"+name.replace(name.substring(0,1),name.substring(0,1).toUpperCase()),
+        if(hasGetter)
+            addMethod("get"+capitalizeFirstLetter(name),
+                    type,AccessModifier.PUBLIC)
+                    .addBody(format("return %s;",name));
+        if(hasSetter)
+            addMethod("set"+capitalizeFirstLetter(name),
                     "void", AccessModifier.PUBLIC)
-                    .addBody(String.format("\nthis.%s = %s;\n",name,name))
+                    .addBody(format("\n\t\tthis.%s = %s;\n",name,name))
                     .addParameter(name, type);
     }
 
@@ -85,8 +62,11 @@ public final class ClassCreator {
         return create(klass);
     }
 
-    // @NotNull
-    private static String create( Class klass) {
+    private String capitalizeFirstLetter(String str){
+        return str.replace(str.substring(0,1),str.substring(0,1).toUpperCase());
+    }
+    
+    private static String create(Class klass) {
         return klass.toString();
     }
 
@@ -112,7 +92,7 @@ public final class ClassCreator {
             };
         }
         public static AccessModifier parse(String str){
-            return str == null ? null :switch (str) {
+            return (str == null) ? null : switch (str) {
                 case "PUBLIC" -> PUBLIC;
                 case "PROTECTED" -> PROTECTED;
                 case "PACKAGE" -> PACKAGE;
@@ -131,7 +111,7 @@ public final class ClassCreator {
                 case CLASS -> "class";
                 case INTERFACE -> "interface";
                 case ANNOTATION -> "@interface";
-                case EXCEPTION -> "class //Exception";
+                case EXCEPTION -> "class /*Exception*/";
             };
         }
 
@@ -148,16 +128,16 @@ public final class ClassCreator {
     }
 
     private static final class Class {
-        final AccessModifier accessModifier;
-        final String type, name;
-        String superclass;
-        final List<String> interfaces;
-        final List<Method> methods;
-        final List<Field> fields;
+        private final AccessModifier accessModifier;
+        private final String type;
+        private final String name;
+        private String modifiers;
+        private String superclass;
+        private final List<String> interfaces;
+        private final List<Method> methods;
+        private final List<Field> fields;
 
         private Class(String name, String type, AccessModifier accessModifier, String superclass, String... interfaces){
-            System.err.println("Class::Class ->");
-            System.err.println("classname = " + name);
             this.name = name;
             this.type = type;
             this.accessModifier = accessModifier;
@@ -166,42 +146,41 @@ public final class ClassCreator {
             this.interfaces.addAll(Arrays.asList(interfaces));
             methods = new ArrayList<>();
             fields = new ArrayList<>();
+            modifiers = "";
         }
 
         private Class(String name, String type, AccessModifier accessModifier, String... interfaces) {
             this(name, type, accessModifier, "Object", interfaces);
         }
 
-        // @NotNull
+        
         private String header() {
-            System.err.println("Class::header ->");
-            System.err.println("classname = " + name);
-            return accessModifier
-                   + type + " " + name + ("Object".equals(superclass)? " ":" extends " + superclass )+
-                   handleInterfaces() + "{\n";
+            return join(" ", accessModifier.toString(), modifiers, type, name,
+                    "Object".equals(superclass) ? "" : (" extends " + superclass),
+                   handleInterfaces()) + "{\n\t";
         }
 
-        // @NotNull
+        
         private String body() {
             return handleFields() + handleMethods() + "\n}";
         }
 
-        // @NotNull
+        
         private String handleFields() {
-//            StringBuilder sb = new StringBuilder();
-//            sb.append(handleArrayElements(fields, ";\n"));
-//            return sb.append("\n").toString();
-            return handleArrayElements(fields, ";\n") + "\n";
+            return fields.stream()
+                           .map(Field::toString)
+                           .collect(Collectors.joining(";\n\t"))
+                            + "\n\t";
         }
 
-        // @NotNull
+        
         private String handleInterfaces() {
-            return handleArrayElements(interfaces, " ", "implements", 0);
+            return join(", ", interfaces);
         }
 
-        // @NotNull
+        
         private String handleMethods() {
-            return handleArrayElements(methods, "\n");
+            return methods.stream().map(Method::toString).collect(Collectors.joining("\n\t"));
         }
 
         @Override
@@ -228,32 +207,32 @@ public final class ClassCreator {
 
 
         private String body() {
-            if (returnType == null || body == null) {
+            if ((returnType == null) || (body == null)) {
                 System.err.println("Method::body");
                 System.err.println("returnType or body is null so deserted");
                 return "WWWWWWWWWWW";
             }
-            return body.isEmpty() ? switch (returnType) {
+            return body.isEmpty() ? ("\t" + switch (returnType) {
                 case "void" -> "";
-                case "double", "int", "float", "long" , "short" , "byte" -> "return 0;";
+                case "double", "int", "float", "long", "short", "byte" -> "return 0;";
                 default -> "return null;";
-            } : body;
+            }) : body;
         }
-        // @NotNull
+        
         @Override
         public String toString() {
-            return accessModifier + handleArrayElements(modifiers, " ") + " " +
+            return accessModifier + join(" ", modifiers) + " " +
                    returnType + " " + name + "(" +
-                   handleArrayElements(parameters, ", ") + "){\n\t" +
-                   body() + "\n}\n";
+                   parameters.stream().map(Field::toString).collect(Collectors.joining(", ")) +
+                   "){\n\t" + body() + "\n\t}\n";
         }
     }
 
     private static final class Field {
-        final String type;
-        final String name;
-        final List<String> modifiers = new ArrayList<>();
-        final AccessModifier accessType;
+        private final String type;
+        private final String name;
+        private final List<String> modifiers = new ArrayList<>();
+        private final AccessModifier accessType;
 
         private Field(String name, String type, AccessModifier accessModifier) {
             this.type = type;
@@ -265,41 +244,31 @@ public final class ClassCreator {
         public String toString() {
             return ((accessType != null) ?
                     accessType.toString() : "")
-                   + handleArrayElements(modifiers, " ") + " " + type + " " + name;
+                   + modifiers.stream().collect(Collectors.joining(" ", "",
+                    join(" ",type, name)));
         }
     }
 
     public static final class DummyMethod {
-        private final Method m;
-        private boolean isEmpty = true;
+        private final Method method;
+        private boolean empty = true;
 
         private DummyMethod(Method temp) {
-            m = temp;
-            List<Field> params = new ArrayList<>();
+            method = temp;
         }
         public DummyMethod addParameter(String name, String type){
-            m.parameters.add(new Field(name,type,AccessModifier.PACKAGE));
+            method.parameters.add(new Field(name,type,AccessModifier.PACKAGE));
             return this;
         }
-//        @SafeVarargs
-//        public final DummyMethod addParameters( Pair<String, String>... parameters) {
-//            isEmpty = false;
-//            m.parameters.addAll(Arrays.stream(parameters)
-//                    .map((pair) -> new Field(pair.getLeft(),pair.getRight()))
-//                    .collect(Collectors.toList()));
-//            return this;
-//        }
 
-        // @Contract("_ -> this")
         public final DummyMethod addBody(String body) {
-            isEmpty = false;
-            m.body = body;
+            empty = false;
+            method.body = body;
             return this;
         }
 
-        // @Contract(pure = true)
         private boolean isEmpty() {
-            return isEmpty;
+            return empty;
         }
     }
 
@@ -307,6 +276,4 @@ public final class ClassCreator {
     public String toString() {
         return build();
     }
-
-
 }

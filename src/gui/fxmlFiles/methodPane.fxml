@@ -11,12 +11,12 @@
 <!--        name-->
         <HBox>
             <Label text="Method Name"/>
-            <TextField onAction="#handleMethodName"/>
+            <TextField onKeyTyped="#handleMethodName"/>
         </HBox>
 <!--        return type-->
         <HBox>
             <Label text="Method Return Type"/>
-            <TextField onAction="#handleMethodReturnType"/>
+            <TextField onKeyTyped="#handleMethodReturnType"/>
         </HBox>
 <!--    publicity   -->
         <HBox alignment="CENTER_LEFT" spacing="50.0" style="-fx-background-color: rgb(113,255,253)">
@@ -31,15 +31,13 @@
 
 <!--        modifiers-->
         <HBox spacing="50.0" style="-fx-background-color: rgb(255,242,137)">
-            <fx:define>
-                <ToggleGroup fx:id="md_abstractGroup"/>
-            </fx:define>
-            <Label alignment="CENTER" nodeOrientation="LEFT_TO_RIGHT" text="Choose modifiers" />
-            <RadioButton text="abstract" toggleGroup="$md_abstractGroup"/>
-            <RadioButton text="final" toggleGroup="$md_abstractGroup" />
-            <RadioButton text="neither" toggleGroup="$md_abstractGroup" />
-            <CheckBox text="static" />
-        </HBox>
+            <fx:define><ToggleGroup fx:id="md_abstractGroup" /></fx:define>
 
+            <Label alignment="CENTER" nodeOrientation="LEFT_TO_RIGHT" text="Choose modifiers"/>
+            <RadioButton text="abstract" toggleGroup="$md_abstractGroup" onAction="#handleMethodModifiers"/>
+            <RadioButton text="final" toggleGroup="$md_abstractGroup" onAction="#handleMethodModifiers"/>
+            <RadioButton text="neither" toggleGroup="$md_abstractGroup" onAction="#handleMethodModifiers"/>
+            <CheckBox text="static" onAction="#handleMethodStatic"/>
+        </HBox>
     </VBox>
 </TitledPane>

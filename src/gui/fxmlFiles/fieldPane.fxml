@@ -4,33 +4,39 @@
 <?import javafx.scene.layout.HBox?>
 <?import java.lang.String?>
 
-<TitledPane xmlns="http://javafx.com/javafx"
-            xmlns:fx="http://javafx.com/fxml"
-            fx:controller="gui.Controller" text = "field">
-<!--    <childrenUnmodifiable>-->
-    <HBox>
-        <Label text="Field Name"/>
-        <TextField onAction="#handleFieldName" id = "1"/>
-    </HBox>
-    <HBox>
-        <Label text="Field Type"/>
-        <TextField onAction="#handleFieldType"/>
-    </HBox>
+<?import javafx.scene.layout.VBox?>
+<TitledPane xmlns:fx="http://javafx.com/fxml"
+            xmlns="http://javafx.com/javafx"
+            fx:controller="gui.Controller" text="field">
+    <VBox>
+        <HBox>
+            <Label text="Field Name"/>
+            <TextField onKeyTyped="#handleFieldName"/>
+        </HBox>
+        <HBox>
+            <Label text="Field Type"/>
+            <TextField onKeyTyped="#handleFieldType"/>
+        </HBox>
 
-<!--    publicity-->
-    <HBox spacing="50.0" style="-fx-background-color: rgb(113,255,253)">
-        <Label alignment="CENTER" nodeOrientation="LEFT_TO_RIGHT" text="Choose a publicity"/>
-        <ChoiceBox fx:id="fd_publicityChooser" onAction="#handleFieldPublicity" id="1">
-            <String fx:value="public"/>
-            <String fx:value="package"/>
-            <String fx:value="private"/>
-            <String fx:value="protected"/>
-        </ChoiceBox>
-    </HBox>
-<!--    modifiers-->
-    <HBox spacing="50.0" style="-fx-background-color: rgb(255,242,137)">
-        <CheckBox text="final" onAction="#handleFieldModifiers"/>
-        <CheckBox text="static" onAction="#handleFieldModifiers"/>
-    </HBox>
-<!--</childrenUnmodifiable>-->
+        <!--    publicity-->
+        <HBox spacing="50.0" style="-fx-background-color: rgb(113,255,253)">
+            <Label alignment="CENTER" nodeOrientation="LEFT_TO_RIGHT" text="Choose a publicity"/>
+            <ChoiceBox fx:id="fd_publicityChooser" onAction="#handleFieldPublicity">
+                <String fx:value="public"/>
+                <String fx:value="package"/>
+                <String fx:value="private"/>
+                <String fx:value="protected"/>
+            </ChoiceBox>
+        </HBox>
+        <!--    modifiers-->
+        <HBox spacing="50.0" style="-fx-background-color: rgb(255,242,137)">
+            <CheckBox text="final" onAction="#handleFieldModifiers"/>
+            <CheckBox text="static" onAction="#handleFieldModifiers"/>
+        </HBox>
+        <HBox spacing="50.0" style="-fx-background-color: rgb(255,172,37)">
+            <CheckBox text = "getter" onAction="#handleFieldGenerated"/>
+            <CheckBox text = "setter" onAction="#handleFieldGenerated"/>
+        </HBox>
+    </VBox>
+
 </TitledPane>
