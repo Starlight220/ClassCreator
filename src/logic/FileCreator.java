@@ -9,13 +9,11 @@ import static java.nio.file.StandardOpenOption.CREATE;
 public class FileCreator {
     private StandardOpenOption onOpen, onExisting;
 
-    // @Contract(pure = true)
     public FileCreator() {
-        this.onOpen = CREATE;
-        this.onOpen = APPEND;
+        onOpen = CREATE;
+        onOpen = APPEND;
     }
 
-    // @Contract(pure = true)
     public FileCreator(StandardOpenOption onOpen, StandardOpenOption onExisting) {
         this.onOpen = onOpen;
         this.onExisting = onExisting;

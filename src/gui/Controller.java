@@ -11,9 +11,9 @@ import javafx.scene.control.*;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyEvent;
 import jdk.jfr.BooleanFlag;
+import logic.LogMap;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
 
 import static java.lang.Integer.parseInt;
@@ -32,7 +32,7 @@ public final class Controller {
     @FXML
     public ChoiceBox<String> fd_publicityChooser = new ChoiceBox<>();
 
-    public int methods = 0, fields = 0;
+    public static int methods = 0, fields = 0;
     @FXML
     private TextField classNameField;
     @FXML
@@ -45,8 +45,7 @@ public final class Controller {
         return (ChoiceBox<String>) ae.getSource();
     }
     @FXML
-    void initClassNameField(){
-        System.err.println("Controller::initClassNameField called by " + getCaller());
+    private void initClassNameField(){
         if((classNameField != null) && !initClassName){
             classNameField.focusedProperty()
                 .addListener((obs, wasFocused, isNowFocused) -> {
@@ -202,8 +201,8 @@ public final class Controller {
         ChoiceBox<String> src = getSourceChoiceBox(ae);
         map.put(fileType, src.getValue());
     }
-
-    public void handleClassAbstraction(ActionEvent ae) {
+    @FXML
+    private void handleClassAbstraction(ActionEvent ae) {
         Labeled src = (Labeled) ae.getSource();
         map.put(classModifiers, src.getText().replace("neither", ""));
     }
@@ -212,7 +211,7 @@ public final class Controller {
         Labeled src = (Labeled) ae.getSource();
         String content = map.get(classModifiers);
         String buttonText = src.getText();
-        String text = content.contains("static")? join(" ",content , buttonText) : buttonText;
+        String text = content.contains("static")? join(" ",content, buttonText) : buttonText;
         map.put(format(methodModifiers, getParentID(src)), text.replace("neither",""));
     }
     @FXML
@@ -225,7 +224,6 @@ public final class Controller {
         }else if(!src.isSelected())
             map.put(id, content.replace("static", ""));
     }
-
     @FXML
     private void handleFieldGenerated(ActionEvent ae) {
         CheckBox src = (CheckBox) ae.getSource();
@@ -238,33 +236,7 @@ public final class Controller {
         }
     }
 
-    private static class LogMap extends HashMap<String, String> {
-        private static final long serialVersionUID = -1473367291655026433L;
-
-        @Override
-        public String put(String key, String value) {
-                       System.out.printf("put in map : \t key = %s \t value = %s\n", key, value);
-            return super.put(key.replace("null",""), value.replace("null",""));
-        }
-
-        @Override
-        public String get(Object key) {
-            String val = super.get(key);
-            System.err.printf("for key %s , returned value %s to caller %s\n", key, val, getCaller());
-            return val;
-        }
-
-        @Override
-        public String getOrDefault(Object key, String defaultValue) {
-            String val = super.getOrDefault(key, defaultValue);
-            System.err.printf("for key %s , returned value %s to caller %s with default %s\n",
-                                        key,                val,     getCaller(),   defaultValue);
-            return val;
-        }
-
-
-    }
-    static String getCaller(){
+    public static String getCaller(){
         StackTraceElement[] stack = Thread.currentThread().getStackTrace();
         StackTraceElement element = stack[4];
         return element.getClassName() + "::" + element.getMethodName() + " :" + element.getLineNumber();

@@ -3,6 +3,7 @@ package logic;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static gui.Controller.getCaller;
 import static java.lang.String.format;
 import static java.lang.String.join;
 import static java.nio.file.StandardOpenOption.CREATE;
@@ -13,9 +14,6 @@ public final class ClassCreator {
     private Class klass;
 
     public ClassCreator(String name, String filetype, AccessModifier accessModifier, String modifiers) {
-        System.err.println("ClassCreator::ClassCreator ->");
-        System.err.println("classname = " + name);
-
         klass = new Class(name, filetype, accessModifier);
         klass.modifiers = modifiers;
     }
@@ -29,32 +27,32 @@ public final class ClassCreator {
     }
 
 
-    public final DummyMethod addMethod(String name, String returnType, AccessModifier access, String... modifiers) {
+    public final DummyMethod addMethod(String name, String returnType, AccessModifier access, String modifiers) {
         Method temp = new Method(name,returnType, access);
-        temp.modifiers.addAll(Arrays.asList(modifiers));
+        temp.modifiers = modifiers;
         klass.methods.add(temp);
         return new DummyMethod(temp);
     }
 
-    public final void addField(String name, String type, AccessModifier accessModifier, String... modifiers) {
+    public final void addField(String name, String type, AccessModifier accessModifier, String modifiers) {
         Field temp = new Field(name, type, accessModifier);
         if (modifiers != null) {
-            temp.modifiers.addAll(Arrays.asList(modifiers));
+            temp.modifiers = modifiers;
         }
         klass.fields.add(temp);
     }
 
-    public void addProperty(String name, String type, AccessModifier accessModifier, String[] modifiers,
+    public void addProperty(String name, String type, AccessModifier accessModifier, String modifiers,
                             boolean hasGetter, boolean hasSetter){
         addField(name,type,accessModifier,modifiers);
         if(hasGetter)
             addMethod("get"+capitalizeFirstLetter(name),
-                    type,AccessModifier.PUBLIC)
+                    type,AccessModifier.PUBLIC, "")
                     .addBody(format("return %s;",name));
         if(hasSetter)
             addMethod("set"+capitalizeFirstLetter(name),
-                    "void", AccessModifier.PUBLIC)
-                    .addBody(format("\n\t\tthis.%s = %s;\n",name,name))
+                    "void", AccessModifier.PUBLIC,"")
+                    .addBody(format("this.%s = %s;",name,name))
                     .addParameter(name, type);
     }
 
@@ -92,12 +90,17 @@ public final class ClassCreator {
             };
         }
         public static AccessModifier parse(String str){
-            return (str == null) ? null : switch (str) {
+            if(str == null)
+                throw new IllegalArgumentException(format("%s called AccessModifier#parse with the argument of null",
+                                                    getCaller()));
+            else return switch (str.toUpperCase()) {
                 case "PUBLIC" -> PUBLIC;
                 case "PROTECTED" -> PROTECTED;
                 case "PACKAGE" -> PACKAGE;
                 case "PRIVATE" -> PRIVATE;
-                default -> null;
+                default -> throw
+                        new IllegalArgumentException("there is no valid ClassType value that can be represented by "
+                                                     + str);
             };
         }
     }
@@ -116,13 +119,18 @@ public final class ClassCreator {
         }
 
         public static ClassType parse(String str){
-            return switch(str.toUpperCase()){
+            if(str == null)
+                throw new IllegalArgumentException(format("%s called ClassType#parse with the argument of null",
+                        getCaller()));
+            else return switch(str.toUpperCase()){
                 case "CLASS" -> CLASS;
                 case "INTERFACE" -> INTERFACE;
                 case "ENUM" -> ENUM;
                 case "EXCEPTION" -> EXCEPTION;
                 case "ANNOTATION","@INTERFACE"->ANNOTATION;
-                default -> throw new IllegalStateException("Unexpected value: " + str.toUpperCase());
+                default -> throw
+                           new IllegalArgumentException("there is no valid ClassType value that can be represented by "
+                                                        + str);
             };
         }
     }
@@ -153,11 +161,13 @@ public final class ClassCreator {
             this(name, type, accessModifier, "Object", interfaces);
         }
 
-        
+
+
         private String header() {
-            return join(" ", accessModifier.toString(), modifiers, type, name,
-                    "Object".equals(superclass) ? "" : (" extends " + superclass),
-                   handleInterfaces()) + "{\n\t";
+            String mods = ((modifiers == null) || modifiers.isEmpty()) ? "" : (modifiers + " ");
+            return accessModifier + mods + type +" " + name + (
+                    "Object".equals(superclass) ? "" : " extends " + superclass) +
+                                                       handleInterfaces() + "{\n\t";
         }
 
         
@@ -169,7 +179,7 @@ public final class ClassCreator {
         private String handleFields() {
             return fields.stream()
                            .map(Field::toString)
-                           .collect(Collectors.joining(";\n\t"))
+                           .collect(Collectors.joining("\n\t"))
                             + "\n\t";
         }
 
@@ -191,10 +201,9 @@ public final class ClassCreator {
     }
 
     private static final class Method {
-        //        DummyMethod dm;
         private String returnType;
         private String name;
-        private final List<String> modifiers = new ArrayList<>();
+        private String modifiers;
         private final List<Field> parameters = new ArrayList<>();
         private AccessModifier accessModifier;
         private String body = "";
@@ -207,31 +216,28 @@ public final class ClassCreator {
 
 
         private String body() {
-            if ((returnType == null) || (body == null)) {
-                System.err.println("Method::body");
-                System.err.println("returnType or body is null so deserted");
-                return "WWWWWWWWWWW";
-            }
-            return body.isEmpty() ? ("\t" + switch (returnType) {
+            return body.isEmpty() ? switch (returnType) {
                 case "void" -> "";
                 case "double", "int", "float", "long", "short", "byte" -> "return 0;";
                 default -> "return null;";
-            }) : body;
+            } : body;
         }
         
         @Override
         public String toString() {
-            return accessModifier + join(" ", modifiers) + " " +
+            String mods = ((modifiers == null) || modifiers.isEmpty()) ? "" : (modifiers + " ");
+            return accessModifier + mods +
                    returnType + " " + name + "(" +
-                   parameters.stream().map(Field::toString).collect(Collectors.joining(", ")) +
-                   "){\n\t" + body() + "\n\t}\n";
+                   parameters.stream().map(Field::asParameter)
+                           .collect(Collectors.joining(", ")).replace(";","") +
+                   "){\n\t\t" + body() + "\n\t}\n";
         }
     }
 
     private static final class Field {
         private final String type;
         private final String name;
-        private final List<String> modifiers = new ArrayList<>();
+        private String modifiers ;
         private final AccessModifier accessType;
 
         private Field(String name, String type, AccessModifier accessModifier) {
@@ -240,12 +246,13 @@ public final class ClassCreator {
             this.accessType = accessModifier;
         }
 
+        private String asParameter(){
+            return join(" ", type, name);
+        }
         @Override
         public String toString() {
-            return ((accessType != null) ?
-                    accessType.toString() : "")
-                   + modifiers.stream().collect(Collectors.joining(" ", "",
-                    join(" ",type, name)));
+            String mods = ((modifiers == null) || modifiers.isEmpty()) ? "" : (modifiers + " ");
+            return accessType + mods + type + " " + name + ";";
         }
     }
 
